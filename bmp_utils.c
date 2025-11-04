@@ -1,5 +1,3 @@
-//파일 읽기/쓰기 함수 구현
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "bmp_utils.h"
@@ -14,22 +12,22 @@ BMPImage* read_bmp(const char* filename) {
 
     BMPImage* img = (BMPImage*)malloc(sizeof(BMPImage));
     if (!img) {
-        perror("메모리 할당 실패");
+        perror("BMPImage 메모리 할당 실패");
         fclose(fp);
         return NULL;
     }
 
-    // 헤더 읽기
-    fread(&img->fileHeader, sizeof(BITMAPFILEHEADER), 1, fp);
-    fread(&img->infoHeader, sizeof(BITMAPINFOHEADER), 1, fp);
+    // 헤더 읽기 (54바이트 전체를 한 번에 읽음)
+    fread(&img->header, sizeof(BMPHeader), 1, fp);
 
     // 픽셀 데이터 메모리 할당 및 읽기
-    int pixelDataSize = img->infoHeader.biSizeImage;
-    if (pixelDataSize == 0) { // biSizeImage가 0일 경우 직접 계산
-        pixelDataSize = img->infoHeader.biWidth * img->infoHeader.biHeight * (img->infoHeader.biBitCount / 8);
+    uint32_t pixelDataSize = img->header.image_size_bytes;
+    if (pixelDataSize == 0) { // image_size_bytes가 0일 경우 직접 계산
+        pixelDataSize = img->header.width_px * img->header.height_px * (img->header.bits_per_pixel / 8);
     }
-    img->pixelData = (unsigned char*)malloc(pixelDataSize);
-    if (!img->pixelData) {
+    
+    img->data = (unsigned char*)malloc(pixelDataSize);
+    if (!img->data) {
         perror("픽셀 데이터 메모리 할당 실패");
         free(img);
         fclose(fp);
@@ -37,8 +35,8 @@ BMPImage* read_bmp(const char* filename) {
     }
 
     // 파일 포인터를 픽셀 데이터 시작 위치로 이동
-    fseek(fp, img->fileHeader.bfOffBits, SEEK_SET);
-    fread(img->pixelData, pixelDataSize, 1, fp);
+    fseek(fp, img->header.offset, SEEK_SET);
+    fread(img->data, pixelDataSize, 1, fp);
 
     fclose(fp);
     return img;
@@ -52,10 +50,12 @@ int write_bmp(const char* filename, BMPImage* image) {
         return -1;
     }
 
-    fwrite(&image->fileHeader, sizeof(BITMAPFILEHEADER), 1, fp);
-    fwrite(&image->infoHeader, sizeof(BITMAPINFOHEADER), 1, fp);
-    fseek(fp, image->fileHeader.bfOffBits, SEEK_SET);
-    fwrite(image->pixelData, image->infoHeader.biSizeImage, 1, fp);
+    // 헤더 쓰기
+    fwrite(&image->header, sizeof(BMPHeader), 1, fp);
+    
+    // 픽셀 데이터 쓰기
+    fseek(fp, image->header.offset, SEEK_SET);
+    fwrite(image->data, image->header.image_size_bytes, 1, fp);
 
     fclose(fp);
     return 0;
@@ -64,8 +64,8 @@ int write_bmp(const char* filename, BMPImage* image) {
 // 할당된 메모리를 해제하는 함수
 void free_bmp(BMPImage* image) {
     if (image) {
-        if (image->pixelData) {
-            free(image->pixelData);
+        if (image->data) {
+            free(image->data);
         }
         free(image);
     }

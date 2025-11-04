@@ -1,5 +1,3 @@
-// 메인 로직 및 각 기능 구현
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -52,29 +50,39 @@ int main(int argc, char* argv[]) {
 
 void process_header(const char* filename) {
     printf("===== 개발자 A: 헤더 정보 출력 기능 (-h) =====\n");
-    // TODO:
-    // 1. read_bmp() 함수로 BMP 파일 읽기
-    // 2. 읽어온 BMPImage 구조체의 헤더 정보들을 형식에 맞게 출력
-    // 3. free_bmp()로 메모리 해제
+    BMPImage* img = read_bmp(filename);
+    if (!img) return;
+
+    // TODO: img->header의 멤버들을 형식에 맞게 출력하세요.
+    // 예: printf("파일 크기: %u\n", img->header.size);
+    //     printf("이미지 너비: %d\n", img->header.width_px);
+    
+    free_bmp(img);
 }
 
 void process_hex_dump(const char* infile, const char* outfile) {
     printf("===== 개발자 A: 16진수 덤프 기능 (-o) =====\n");
-    // TODO:
-    // 1. read_bmp() 함수로 BMP 파일 읽기
-    // 2. 출력 파일을 쓰기 모드로 열기
-    // 3. BMPImage의 pixelData를 순회하면서 8바이트씩 16진수 형식으로 파일에 출력
-    // 4. free_bmp()로 메모리 해제
+    BMPImage* img = read_bmp(infile);
+    if (!img) return;
+
+    // TODO: 출력 파일(outfile)을 쓰기 모드로 열고,
+    // img->data의 내용을 과제 형식에 맞게 16진수로 출력하세요.
+    
+    free_bmp(img);
 }
 
 void process_grayscale(const char* infile, const char* outfile) {
     printf("===== 개발자 A: 그레이스케일 변환 기능 (-g) =====\n");
-    // TODO:
-    // 1. read_bmp() 함수로 BMP 파일 읽기
-    // 2. 픽셀 데이터(B, G, R 순서)를 순회하며 (R+G+B)/3 평균값 계산
-    // 3. 각 픽셀의 B, G, R 값을 모두 평균값으로 변경
-    // 4. write_bmp() 함수로 변경된 이미지 데이터를 새로운 파일에 저장
-    // 5. free_bmp()로 메모리 해제
+    BMPImage* img = read_bmp(infile);
+    if (!img) return;
+
+    // TODO: 
+    // 1. img->data의 픽셀 데이터를 순회합니다. (총 크기는 img->header.image_size_bytes)
+    // 2. 24비트 BMP 기준, 3바이트(Blue, Green, Red)씩 읽어 평균값(gray)을 계산합니다.
+    // 3. 해당 3바이트를 모두 gray 값으로 덮어씁니다.
+    // 4. write_bmp(outfile, img) 함수로 결과를 저장합니다.
+
+    free_bmp(img);
 }
 
 
@@ -82,20 +90,27 @@ void process_grayscale(const char* infile, const char* outfile) {
 
 void process_encrypt(const char* bmp_in, const char* msg_file, const char* bmp_out) {
     printf("===== 개발자 B: 암호화 기능 (-e) =====\n");
-    // TODO:
-    // 1. read_bmp()로 원본 BMP 파일 읽기
-    // 2. 메시지 파일을 읽어 숨길 텍스트 가져오기
-    // 3. 픽셀 데이터를 순회하며, 텍스트의 각 비트를 LSB에 숨기기
-    // 4. write_bmp()로 암호화된 이미지 데이터를 새 파일에 저장
-    // 5. free_bmp()로 메모리 해제
+    BMPImage* img = read_bmp(bmp_in);
+    if (!img) return;
+    
+    // TODO: 
+    // 1. msg_file의 내용을 읽어옵니다.
+    // 2. img->data의 각 바이트의 최하위 비트(LSB)에 메시지의 각 비트를 숨깁니다.
+    // 3. write_bmp(bmp_out, img) 함수로 결과를 저장합니다.
+
+    free_bmp(img);
 }
 
 void process_decrypt(const char* bmp_in) {
     printf("===== 개발자 B: 복호화 기능 (-d) =====\n");
+    BMPImage* img = read_bmp(bmp_in);
+    if (!img) return;
+    
     // TODO:
-    // 1. read_bmp()로 암호화된 BMP 파일 읽기
-    // 2. 픽셀 데이터를 순회하며 각 바이트의 LSB를 추출
-    // 3. 8비트씩 모아 하나의 문자로 만들고, 메시지 끝을 만나면 종료
-    // 4. 추출된 메시지를 화면에 출력
-    // 5. free_bmp()로 메모리 해제
+    // 1. img->data의 각 바이트에서 최하위 비트(LSB)를 순서대로 추출합니다.
+    // 2. 8개의 비트를 모아 하나의 문자를 만듭니다.
+    // 3. 메시지 끝을 나타내는 신호(e.g., NULL 문자)를 만날 때까지 반복합니다.
+    // 4. 완성된 메시지를 화면에 출력합니다.
+    
+    free_bmp(img);
 }
