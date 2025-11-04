@@ -174,10 +174,10 @@ void process_grayscale(const char *infile, const char *outfile)
 
     BMPImage bmp_img;
 
-    // 1. 헤더 읽기
+    // 헤더 읽기
     read_header(fp_in, &bmp_img.header);
 
-    // 2. 픽셀 데이터 읽기
+    // 픽셀 데이터 읽기
     bmp_img.data = read_data(fp_in, &bmp_img.header);
     if (!bmp_img.data)
     {
@@ -186,13 +186,13 @@ void process_grayscale(const char *infile, const char *outfile)
         return;
     }
 
-    // 3. 그레이스케일로 변환
+    // 그레이스케일로 변환
     change_to_grayscale(bmp_img.data, bmp_img.header.width_px, bmp_img.header.height_px);
 
-    // 4. 새로운 파일에 쓰기
+    // 새로운 파일에 쓰기
     write_data(fp_out, &bmp_img);
 
-    // 5. 자원 해제
+    // 자원 해제
     fclose(fp_in);
     fclose(fp_out);
     free(bmp_img.data);
